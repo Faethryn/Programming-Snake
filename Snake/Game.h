@@ -35,8 +35,8 @@ struct Tile
 	Point2f coordinate{ 0,0 };
 };
 
+Tile** g_TileArray = new Tile * [g_Columns];
 
-Tile* g_TileArray = new Tile[ g_Columns * g_Rows];
 
 
 
@@ -44,10 +44,11 @@ Tile* g_TileArray = new Tile[ g_Columns * g_Rows];
 
 
 // Declare your own functions here
+void ArrayStart();
 
 void TileStart();
 Point2f GetCoord(const Point2f& origin);
-Point2f GetCoord(int index);
+
 int GetArrayIndex(const Point2f& coord);
 Point2f GetOrigin(const Point2f& coord);
 void TileCountDown(Tile& currentTile);

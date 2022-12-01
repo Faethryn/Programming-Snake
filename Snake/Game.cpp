@@ -10,6 +10,7 @@ using namespace std;
 void Start()
 {
 	// initialize game resources here
+	ArrayStart();
 	TileStart();
 }
 
@@ -110,38 +111,66 @@ void OnMouseUpEvent(const SDL_MouseButtonEvent& e)
 void DrawTiles()
 {
 
-	int arraySize = g_Columns * g_Rows;
-	for (int index{ 0 }; index < arraySize; index++)
+	
+	for (int columnIndex{ 0 }; columnIndex < g_Columns; columnIndex++)
 	{
-		Tile* currentTile = &g_TileArray[index];
-
-		if (currentTile->currentType == TileType::Snake)
+		for (int rowIndex{ 0 }; rowIndex < g_Rows; rowIndex++)
 		{
-		Point2f origin{ GetOrigin(currentTile->coordinate) };
-		Point2f size{ g_WindowWidth / g_Columns , g_WindowHeight / g_Rows };
-		SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-		FillRect(origin, size.x, size.y);
+		Tile* currentTile = &g_TileArray[columnIndex][rowIndex];
+
+			if (currentTile->currentType == TileType::Snake)
+			{
+			Point2f origin{ GetOrigin(currentTile->coordinate) };
+			Point2f size{ g_WindowWidth / g_Columns , g_WindowHeight / g_Rows };
+			SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+			FillRect(origin, size.x, size.y);
+
+			}
+
 
 		}
 
 	}
 }
 
+void ArrayStart()
+{
+	for (int indexColumn{ 0 }; indexColumn < g_Columns; indexColumn++)
+	{
+		g_TileArray[indexColumn] = new Tile[g_Rows];
+
+		for (int indexRow{ 0 }; indexRow < g_Rows; indexRow++)
+		{
+			Tile* ptrNewTile = new Tile{};
+			g_TileArray[indexColumn][indexRow] = *ptrNewTile;
+
+
+		}
+		
+	}
+
+}
+
 void TileStart()
 {
 	int arraySize = g_Columns * g_Rows;
-	for (int index{0}; index <  arraySize; index++)
+	for (int indexColumn{0}; indexColumn <  g_Columns; indexColumn++)
 	{
-		Tile* currentTile = &g_TileArray[index];
-		currentTile->coordinate = GetCoord(index);
-
-		//debugging purposes to display tiles 
-		if ((index % 13) == 0)
+		for (int indexRow{ 0 }; indexRow < g_Rows; indexRow++)
 		{
-			currentTile->currentType = TileType::Snake;
+			
+			Tile* currentTile = &g_TileArray[indexColumn][indexRow];
+			currentTile->coordinate = Point2f(float(indexColumn), float(indexRow));
+
+			if (((indexColumn % 13) == 0) && ((indexRow % 10) == 0 ))
+			{
+				currentTile->currentType = TileType::Snake;
+			}
+
+			std::cout << "index:" << indexColumn << '\t' << "coords:" << currentTile->coordinate.x << "," << currentTile->coordinate.y << '\n';
 		}
 
-		std::cout << "index:" << index << '\t' << "coords:" << currentTile->coordinate.x << "," << currentTile->coordinate.y << '\n';
+		//debugging purposes to display tiles 
 	}
 }
 
@@ -170,12 +199,7 @@ Point2f GetCoord(const Point2f& origin)
 	return Point2f{ 0,0 };
 }
 
-Point2f GetCoord(int index)
-{
-	int column = index % g_Columns;
-	int row = index / g_Rows;
-	return Point2f{ float(column), float(row) };
-}
+
 
 int GetArrayIndex(const Point2f& coord)
 {
