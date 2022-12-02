@@ -20,7 +20,7 @@ Point2f g_MousePos{1.0f,1.0f};
 int g_Rows{ 30 };
 int g_Columns{ 30 };
 
-const float g_TimePerTurn{ 2.0f };
+const float g_TimePerTurn{ 0.5f };
 float g_Timer{ 0.0f };
 
 bool g_IsGameOver{ false };
@@ -68,7 +68,8 @@ void UpdateSnake();
 void UpdateFood();
 
 void SnakeMovement();
-void SnakeEat();
+void SnakeMove(int newColumn, int newRow);
+void SnakeEat(int newColumn, int newRow);
 void SnakeIncreaseLength();
 
 bool IsCoordSnakeBlock(int column, int row);

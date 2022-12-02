@@ -133,6 +133,8 @@ void OnKeyUpEvent(SDL_Keycode key)
 			g_snake.currentDirection = Direction::Left;
 			break;
 		}
+		default:
+			break;
 		
 	
 	}
@@ -195,6 +197,15 @@ void DrawTiles()
 
 			}
 
+			if (currentTile->currentType == TileType::Food)
+			{
+				Point2f origin{ GetOrigin(currentTile->coordinate) };
+				Point2f size{ g_WindowWidth / g_Columns , g_WindowHeight / g_Rows };
+				SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+				FillRect(origin, size.x, size.y);
+
+			}
+
 
 		}
 
@@ -231,6 +242,11 @@ void TileStart()
 			Tile* currentTile = &g_TileArray[indexColumn][indexRow];
 			currentTile->coordinate = Point2f(float(indexColumn), float(indexRow));
 
+			if (((indexColumn % 25) == 0) && (((indexRow % 25) == 0)))
+			{
+				currentTile->currentType = TileType::Food;
+				currentTile->lightTimer = 90;
+			}
 			
 
 			std::cout << "index:" << indexColumn << '\t' << "coords:" << currentTile->coordinate.x << "," << currentTile->coordinate.y << '\n';
@@ -342,77 +358,38 @@ void SnakeMovement()
 	{
 		case Direction::Up:
 		{
+			int newColumn = int(g_snake.snakeHeadCoords.x);
+			int newRow = int(g_snake.snakeHeadCoords.y + 1);
 
-			if (IsCoordSnakeBlock(int(g_snake.snakeHeadCoords.x ), int(g_snake.snakeHeadCoords.y + 1)))
-			{
-				GameOverTrigger();
-			}
-			else
-			{
-				g_snake.currentDirection = Direction::Left;
-			
-				g_snake.snakeHeadCoords.y += 1;
+			SnakeMove(newColumn, newRow);
 
-				Tile* currentTile = &g_TileArray[int(g_snake.snakeHeadCoords.x)][int(g_snake.snakeHeadCoords.y)];
-				currentTile->currentType = TileType::Snake;
-				currentTile->lightTimer = g_snake.length;
-
-			}
 				break;
 		}
 		case Direction::Down:
 		{
-			if (IsCoordSnakeBlock(int(g_snake.snakeHeadCoords.x), int(g_snake.snakeHeadCoords.y - 1)))
-			{
-				GameOverTrigger();
+			int newColumn = int(g_snake.snakeHeadCoords.x);
+			int newRow = int(g_snake.snakeHeadCoords.y -1);
 
-			}
-			else
-			{
-				g_snake.snakeHeadCoords.y -= 1;
+			SnakeMove(newColumn, newRow);
 
-				Tile* currentTile = &g_TileArray[int(g_snake.snakeHeadCoords.x)][int(g_snake.snakeHeadCoords.y)];
-				currentTile->currentType = TileType::Snake;
-				currentTile->lightTimer = g_snake.length;
-
-			}
 				break;
 		}
 		case Direction::Right:
 		{
-			if (IsCoordSnakeBlock(int(g_snake.snakeHeadCoords.x + 1), int(g_snake.snakeHeadCoords.y  )))
-			{
-				GameOverTrigger();
+			int newColumn = int(g_snake.snakeHeadCoords.x +1);
+			int newRow = int(g_snake.snakeHeadCoords.y );
+			SnakeMove(newColumn, newRow);
 
-			}
-			else
-			{
-				g_snake.snakeHeadCoords.x += 1;
-
-				Tile* currentTile = &g_TileArray[int(g_snake.snakeHeadCoords.x)][int(g_snake.snakeHeadCoords.y)];
-				currentTile->currentType = TileType::Snake;
-				currentTile->lightTimer = g_snake.length;
-
-			}
 				break;
 		}
 		case Direction::Left:
 		{
-			if (IsCoordSnakeBlock(int(g_snake.snakeHeadCoords.x -1), int(g_snake.snakeHeadCoords.y)))
-			{
-				GameOverTrigger();
+			int newColumn = int(g_snake.snakeHeadCoords.x -1);
+			int newRow = int(g_snake.snakeHeadCoords.y );
 
-			}
-			else
-			{
+			SnakeMove(newColumn, newRow);
 
-				g_snake.snakeHeadCoords.x -= 1;
-
-				Tile* currentTile = &g_TileArray[int(g_snake.snakeHeadCoords.x)][int(g_snake.snakeHeadCoords.y)];
-				currentTile->currentType = TileType::Snake;
-				currentTile->lightTimer = g_snake.length;
-
-			}
+			
 				break;
 		}
 	}
@@ -420,9 +397,33 @@ void SnakeMovement()
 	
 }
 
-void SnakeEat()
+void SnakeMove(int newColumn, int newRow)
 {
+	if ((IsCoordSnakeBlock(newColumn, newRow)) || (IsCoordOutOfBounds(newColumn, newRow)))
+	{
+		GameOverTrigger();
 
+	}
+	else
+	{
+		SnakeEat(newColumn, newRow);
+
+		g_snake.snakeHeadCoords = Point2f{ float(newColumn), float(newRow) };
+
+		Tile* currentTile = &g_TileArray[int(g_snake.snakeHeadCoords.x)][int(g_snake.snakeHeadCoords.y)];
+		currentTile->currentType = TileType::Snake;
+		currentTile->lightTimer = g_snake.length;
+
+	}
+}
+
+
+void SnakeEat(int newColumn, int newRow)
+{
+	if (g_TileArray[newColumn][newRow].currentType == TileType::Food)
+	{
+		SnakeIncreaseLength();
+	}
 }
 
 void SnakeIncreaseLength()
@@ -446,6 +447,7 @@ void SnakeIncreaseLength()
 
 
 	}
+	g_snake.length += 1;
 
 }
 	
