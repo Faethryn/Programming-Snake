@@ -399,7 +399,7 @@ void SnakeMovement()
 
 void SnakeMove(int newColumn, int newRow)
 {
-	if ((IsCoordSnakeBlock(newColumn, newRow)) || (IsCoordOutOfBounds(newColumn, newRow)))
+	if ((IsCoordOutOfBounds(newColumn, newRow)) || (IsCoordSnakeBlock(newColumn, newRow)))
 	{
 		GameOverTrigger();
 
