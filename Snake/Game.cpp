@@ -141,8 +141,8 @@ void ArrayStart()
 
 		for (int indexRow{ 0 }; indexRow < g_Rows; indexRow++)
 		{
-			Tile* ptrNewTile = new Tile{};
-			g_TileArray[indexColumn][indexRow] = *ptrNewTile;
+			Tile ptrNewTile =  Tile{};
+			g_TileArray[indexColumn][indexRow] = ptrNewTile;
 
 
 		}
