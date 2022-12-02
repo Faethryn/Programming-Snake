@@ -5,8 +5,8 @@ using namespace utils;
 std::string g_WindowTitle{ "Snake - Muylle_Laurens, DeBaere_Jurre - 1DAE14" };
 
 // Change the window dimensions here
-float g_WindowWidth{ 800 };
-float g_WindowHeight{ 800 };
+float g_WindowWidth{ 600 };
+float g_WindowHeight{ 600 };
 
 Point2f g_MousePos{1.0f,1.0f};
 
@@ -20,12 +20,19 @@ Point2f g_MousePos{1.0f,1.0f};
 int g_Rows{ 30 };
 int g_Columns{ 30 };
 
+const float g_TimePerTurn{ 2.0f };
+float g_Timer{ 0.0f };
 
-
+bool g_IsGameOver{ false };
 
 enum class TileType 
 {
 	Inactive, Snake, Food
+};
+
+enum class Direction
+{
+	Up, Down, Left, Right
 };
 
 struct Tile
@@ -37,16 +44,39 @@ struct Tile
 
 Tile** g_TileArray = new Tile * [g_Columns];
 
+struct Snake
+{
+	int length{ 4 };
+	Point2f snakeHeadCoords{ (g_Columns / 2) - 1.0f , (g_Rows / 2) - 1.0f };
+	Direction currentDirection{ Direction::Up };
+};
 
-
-
+Snake g_snake{};
 
 
 
 // Declare your own functions here
 void ArrayStart();
-
 void TileStart();
+void SnakeStart();
+
+void TurnTiming(float elapsedSeconds);
+void TurnUpdate();
+
+void UpdateTiles();
+void UpdateSnake();
+void UpdateFood();
+
+void SnakeMovement();
+void SnakeEat();
+void SnakeIncreaseLength();
+
+bool IsCoordSnakeBlock(int column, int row);
+bool IsCoordFoodBlock(int column, int row);
+bool IsCoordOutOfBounds(int column, int row);
+
+void GameOverTrigger();
+
 Point2f GetCoord(const Point2f& origin);
 
 int GetArrayIndex(const Point2f& coord);

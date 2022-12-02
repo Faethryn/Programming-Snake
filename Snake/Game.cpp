@@ -12,11 +12,20 @@ void Start()
 	// initialize game resources here
 	ArrayStart();
 	TileStart();
+	SnakeStart();
 }
 
 void Draw()
 {
+	if (g_IsGameOver == false)
+	{
 	ClearBackground(0.6f,0.6f,1.0f);
+
+	}
+	else
+	{
+		ClearBackground(1.0f, 0.0f, 0.0f);
+	}
 	
 	DrawTiles();
 
@@ -41,6 +50,14 @@ void Update(float elapsedSec)
 	//{
 	//	std::cout << "Left and up arrow keys are down\n";
 	//}
+
+
+	if (g_IsGameOver == false)
+	{
+	TurnTiming(elapsedSec);
+
+	}
+
 }
 
 void End()
@@ -58,16 +75,67 @@ void OnKeyDownEvent(SDL_Keycode key)
 
 void OnKeyUpEvent(SDL_Keycode key)
 {
-	/*switch (key)
+	switch (key)
 	{
-	case SDLK_UP:
+		case SDLK_UP:
+		{
+			/*if (IsCoordSnakeBlock(int(g_snake.snakeHeadCoords.x), int(g_snake.snakeHeadCoords.y + 1)))
+			{
+
+			}
+			else
+			{
+				g_snake.currentDirection = Direction::Up;
+			}*/
+
+			g_snake.currentDirection = Direction::Up;
+
+			break;
+		}
+		case SDLK_DOWN:
+		{
+			/*if (IsCoordSnakeBlock(int(g_snake.snakeHeadCoords.x), int(g_snake.snakeHeadCoords.y - 1)))
+			{
+
+			}
+			else
+			{
+				g_snake.currentDirection = Direction::Down;
+			}*/
+			g_snake.currentDirection = Direction::Down;
+
+			break;
+		}
+		case SDLK_RIGHT:
+		{
+			/*if (IsCoordSnakeBlock(int(g_snake.snakeHeadCoords.x +1), int(g_snake.snakeHeadCoords.y )))
+			{
+
+			}
+			else
+			{
+				g_snake.currentDirection = Direction::Right;
+			}*/
+
+			g_snake.currentDirection = Direction::Right;
+			break;
+		}
+		case SDLK_LEFT:
+		{
+			/*if (IsCoordSnakeBlock(int(g_snake.snakeHeadCoords.x -1), int(g_snake.snakeHeadCoords.y )))
+			{
 	
-		break;
-	case SDLK_DOWN:
+			}
+			else
+			{
+				g_snake.currentDirection = Direction::Left;
+			}*/
+			g_snake.currentDirection = Direction::Left;
+			break;
+		}
 		
-		break;
 	
-	}*/
+	}
 }
 
 void OnMouseMotionEvent(const SDL_MouseMotionEvent& e)
@@ -133,6 +201,7 @@ void DrawTiles()
 	}
 }
 
+//initializationCode
 void ArrayStart()
 {
 	for (int indexColumn{ 0 }; indexColumn < g_Columns; indexColumn++)
@@ -153,7 +222,7 @@ void ArrayStart()
 
 void TileStart()
 {
-	int arraySize = g_Columns * g_Rows;
+	
 	for (int indexColumn{0}; indexColumn <  g_Columns; indexColumn++)
 	{
 		for (int indexRow{ 0 }; indexRow < g_Rows; indexRow++)
@@ -162,10 +231,7 @@ void TileStart()
 			Tile* currentTile = &g_TileArray[indexColumn][indexRow];
 			currentTile->coordinate = Point2f(float(indexColumn), float(indexRow));
 
-			if (((indexColumn % 13) == 0) && ((indexRow % 10) == 0 ))
-			{
-				currentTile->currentType = TileType::Snake;
-			}
+			
 
 			std::cout << "index:" << indexColumn << '\t' << "coords:" << currentTile->coordinate.x << "," << currentTile->coordinate.y << '\n';
 		}
@@ -174,24 +240,255 @@ void TileStart()
 	}
 }
 
-void TileCountDown(Tile& currentTile)
+void SnakeStart()
 {
-	if (currentTile.lightTimer == 0)
+	for (int i{0}; i < g_snake.length; i++)
 	{
-		currentTile.currentType = TileType::Inactive;
+		Tile* currentTile = &g_TileArray[int(g_snake.snakeHeadCoords.x)][int(g_snake.snakeHeadCoords.y - i)];
+		currentTile->currentType = TileType::Snake;
+		currentTile->lightTimer = (g_snake.length - i);
+
 	}
-	else
+}
+
+//update code
+
+void TurnTiming(float elapsedSeconds)
+{
+	g_Timer += elapsedSeconds;
+
+	if (g_Timer >= g_TimePerTurn)
 	{
-		currentTile.lightTimer -= 1;
+		g_Timer = 0.0f;
+		TurnUpdate();
 	}
+}
+
+void TurnUpdate()
+{
+
+	UpdateSnake();
+	UpdateTiles();
+
+}
+
+void UpdateTiles()
+{
+
+	for (int indexColumn{ 0 }; indexColumn < g_Columns; indexColumn++)
+	{
+		for (int indexRow{ 0 }; indexRow < g_Rows; indexRow++)
+		{
+
+			Tile* currentTile = &g_TileArray[indexColumn][indexRow];
+			TileCountDown(*currentTile);
+
+
+
+			
+		}
+
+		
+	}
+	
+}
+
+void UpdateSnake()
+{
+	SnakeMovement();
+}
+
+void UpdateFood()
+{
+
+}
+
+
+void GameOverTrigger()
+{
+	g_IsGameOver = true; 
+	
+
 }
 
 
 
+//Tile code
+
+void TileCountDown(Tile& currentTile)
+{
+	
+	
+	if(currentTile.lightTimer == 0)
+	{
+		if (currentTile.currentType != TileType::Inactive)
+		{
+			currentTile.currentType = TileType::Inactive;
+		}
+	}
+
+	if (currentTile.lightTimer > 0)
+	{
+		currentTile.lightTimer -= 1;
+	}
+	
+}
+
+//snake code
+
+void SnakeMovement()
+{
+	switch (g_snake.currentDirection)
+	{
+		case Direction::Up:
+		{
+
+			if (IsCoordSnakeBlock(int(g_snake.snakeHeadCoords.x ), int(g_snake.snakeHeadCoords.y + 1)))
+			{
+				GameOverTrigger();
+			}
+			else
+			{
+				g_snake.currentDirection = Direction::Left;
+			
+				g_snake.snakeHeadCoords.y += 1;
+
+				Tile* currentTile = &g_TileArray[int(g_snake.snakeHeadCoords.x)][int(g_snake.snakeHeadCoords.y)];
+				currentTile->currentType = TileType::Snake;
+				currentTile->lightTimer = g_snake.length;
+
+			}
+				break;
+		}
+		case Direction::Down:
+		{
+			if (IsCoordSnakeBlock(int(g_snake.snakeHeadCoords.x), int(g_snake.snakeHeadCoords.y - 1)))
+			{
+				GameOverTrigger();
+
+			}
+			else
+			{
+				g_snake.snakeHeadCoords.y -= 1;
+
+				Tile* currentTile = &g_TileArray[int(g_snake.snakeHeadCoords.x)][int(g_snake.snakeHeadCoords.y)];
+				currentTile->currentType = TileType::Snake;
+				currentTile->lightTimer = g_snake.length;
+
+			}
+				break;
+		}
+		case Direction::Right:
+		{
+			if (IsCoordSnakeBlock(int(g_snake.snakeHeadCoords.x + 1), int(g_snake.snakeHeadCoords.y  )))
+			{
+				GameOverTrigger();
+
+			}
+			else
+			{
+				g_snake.snakeHeadCoords.x += 1;
+
+				Tile* currentTile = &g_TileArray[int(g_snake.snakeHeadCoords.x)][int(g_snake.snakeHeadCoords.y)];
+				currentTile->currentType = TileType::Snake;
+				currentTile->lightTimer = g_snake.length;
+
+			}
+				break;
+		}
+		case Direction::Left:
+		{
+			if (IsCoordSnakeBlock(int(g_snake.snakeHeadCoords.x -1), int(g_snake.snakeHeadCoords.y)))
+			{
+				GameOverTrigger();
+
+			}
+			else
+			{
+
+				g_snake.snakeHeadCoords.x -= 1;
+
+				Tile* currentTile = &g_TileArray[int(g_snake.snakeHeadCoords.x)][int(g_snake.snakeHeadCoords.y)];
+				currentTile->currentType = TileType::Snake;
+				currentTile->lightTimer = g_snake.length;
+
+			}
+				break;
+		}
+	}
+
+	
+}
+
+void SnakeEat()
+{
+
+}
+
+void SnakeIncreaseLength()
+{
+	for (int indexColumn{ 0 }; indexColumn < g_Columns; indexColumn++)
+	{
+		for (int indexRow{ 0 }; indexRow < g_Rows; indexRow++)
+		{
+
+			Tile* currentTile = &g_TileArray[indexColumn][indexRow];
+			if (currentTile->currentType == TileType::Snake)
+			{
+			currentTile->lightTimer += 1;
+
+			}
+
+
+
+
+		}
+
+
+	}
+
+}
 	
 
+//TileChecks
+bool IsCoordSnakeBlock(int column, int row)
+{
+	if (g_TileArray[column][row].currentType == TileType::Snake)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool IsCoordFoodBlock(int column, int row)
+{
+	if (g_TileArray[column][row].currentType == TileType::Food)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool IsCoordOutOfBounds(int column, int row)
+{
+	if (((column < 0) || (column > (g_Columns - 1))) || ((row < 0) || (row > (g_Rows - 1))))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 
 
+//calculations
 #pragma region CoordCalculations
 
 Point2f GetCoord(const Point2f& origin)
