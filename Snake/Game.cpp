@@ -10,6 +10,8 @@ using namespace std;
 void Start()
 {
 	// initialize game resources here
+	TextureFromFile("./Resources/snake-graphics.png", g_SnakeTexture);
+
 	ArrayStart();
 	TileStart();
 	SnakeStart();
@@ -180,7 +182,7 @@ void OnMouseUpEvent(const SDL_MouseButtonEvent& e)
 
 void DrawTiles()
 {
-
+	DrawSnake();
 	
 	for (int columnIndex{ 0 }; columnIndex < g_Columns; columnIndex++)
 	{
@@ -188,14 +190,14 @@ void DrawTiles()
 		{
 		Tile* currentTile = &g_TileArray[columnIndex][rowIndex];
 
-			if (currentTile->currentType == TileType::Snake)
+			/*if (currentTile->currentType == TileType::Snake)
 			{
 			Point2f origin{ GetOrigin(currentTile->coordinate) };
 			Point2f size{ g_WindowWidth / g_Columns , g_WindowHeight / g_Rows };
 			SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 			FillRect(origin, size.x, size.y);
 
-			}
+			}*/
 
 			if (currentTile->currentType == TileType::Food)
 			{
@@ -210,6 +212,278 @@ void DrawTiles()
 		}
 
 	}
+}
+
+
+
+void DrawSnake()
+{
+	DrawHead();
+
+	 DrawBody();
+	
+
+	 DrawTail();
+
+}
+
+void DrawHead()
+{
+		Tile* currentSnakeTile = &g_snake.snakeArray[0];
+
+		Point2f origin{ GetOrigin(currentSnakeTile->coordinate) };
+		Point2f size{ g_WindowWidth / g_Columns , g_WindowHeight / g_Rows };
+
+		Point2f sourceOrigin{ 64, 192 };
+
+		
+
+		int yOffset{ int(g_snake.snakeArray[1].coordinate.y - currentSnakeTile->coordinate.y) };
+		int xOffset{ int(g_snake.snakeArray[1].coordinate.x - currentSnakeTile->coordinate.x) };
+
+		switch (yOffset)
+		{
+			case -1:
+			{
+				//up
+				sourceOrigin = Point2f{ 192, 64 };
+
+				break;
+			}
+			case 1:
+			{
+				//down
+				sourceOrigin = Point2f{ 256, 128 };
+
+				break;
+			}
+
+		}
+
+		switch (xOffset)
+		{
+		case -1:
+		{
+			//right
+			sourceOrigin = Point2f{ 256, 64 };
+			break;
+		}
+		case 1:
+		{
+			//left
+			sourceOrigin = Point2f{ 192, 128 };
+
+			break;
+		}
+
+		}
+
+		
+
+
+		Point2f sourceSize{ 64,64 };
+
+		DrawSnakeTile(origin, size, sourceOrigin, sourceSize, g_SnakeTexture);
+	}
+
+
+void DrawBody()
+{
+	for (int i{ 1 }; i < (g_snake.length - 1); i++)
+	{
+		Tile* currentSnakeTile = &g_snake.snakeArray[i];
+
+		Point2f origin{ GetOrigin(currentSnakeTile->coordinate) };
+		Point2f size{ g_WindowWidth / g_Columns , g_WindowHeight / g_Rows };
+		Point2f sourceOrigin{ 64, 192 };
+
+
+		Direction previousTileDirection{GetRelativeDirection(int(currentSnakeTile->coordinate.x ), int(g_snake.snakeArray[i-1].coordinate.x), int(currentSnakeTile->coordinate.y) ,int( g_snake.snakeArray[i - 1].coordinate.y))};
+		Direction nextTileDirection{ GetRelativeDirection(int(currentSnakeTile->coordinate.x) , int(g_snake.snakeArray[i + 1].coordinate.x), int(currentSnakeTile->coordinate.y) , int(g_snake.snakeArray[i + 1].coordinate.y)) };
+
+		if (previousTileDirection == Direction::Left || nextTileDirection == Direction::Left)
+		{
+			if (nextTileDirection == Direction::Up || previousTileDirection == Direction::Up)
+			{
+				sourceOrigin = Point2f{ 128, 192 };
+			}
+			if (nextTileDirection == Direction::Down || previousTileDirection == Direction::Down)
+			{
+				sourceOrigin = Point2f{ 128, 64 };
+
+			}
+			if (nextTileDirection == Direction::Right || previousTileDirection == Direction::Right)
+			{
+				sourceOrigin = Point2f{ 64, 64 };
+
+			}
+		}
+
+		if (previousTileDirection == Direction::Up || nextTileDirection == Direction::Up)
+		{
+
+			if (nextTileDirection == Direction::Down || previousTileDirection == Direction::Down)
+			{
+				sourceOrigin = Point2f{ 128, 128 };
+
+			}
+			if (nextTileDirection == Direction::Right || previousTileDirection == Direction::Right)
+			{
+				sourceOrigin = Point2f{ 0, 128 };
+
+			}
+		}
+
+		if (previousTileDirection == Direction::Down || nextTileDirection == Direction::Down)
+		{
+
+			if (nextTileDirection == Direction::Right || previousTileDirection == Direction::Right)
+			{
+				sourceOrigin = Point2f{ 0, 64 };
+
+			}
+			
+		}
+
+
+
+		Point2f sourceSize{ 64,64 };
+
+		DrawSnakeTile(origin, size, sourceOrigin, sourceSize, g_SnakeTexture);
+
+	}
+}
+
+void DrawTail()
+{
+	Tile* currentSnakeTile = &g_snake.snakeArray[g_snake.length-1];
+
+	Point2f origin{ GetOrigin(currentSnakeTile->coordinate) };
+	Point2f size{ g_WindowWidth / g_Columns , g_WindowHeight / g_Rows };
+
+	Point2f sourceOrigin{ 64, 192 };
+
+
+
+	int yOffset{ int(g_snake.snakeArray[g_snake.length - 2].coordinate.y - currentSnakeTile->coordinate.y) };
+	int xOffset{ int(g_snake.snakeArray[g_snake.length - 2].coordinate.x - currentSnakeTile->coordinate.x) };
+
+	switch (yOffset)
+	{
+	case -1:
+	{
+		//up
+		sourceOrigin = Point2f{ 256, 256 };
+
+
+		break;
+	}
+	case 1:
+	{
+		//down
+		sourceOrigin = Point2f{ 192, 192 };
+
+		break;
+	}
+
+	}
+
+	switch (xOffset)
+	{
+	case -1:
+	{
+		//right
+		sourceOrigin = Point2f{ 192, 256 };
+
+		break;
+	}
+	case 1:
+	{
+		//left
+		sourceOrigin = Point2f{ 256, 192 };
+
+
+		break;
+	}
+
+	}
+
+
+
+
+	Point2f sourceSize{ 64,64 };
+
+	DrawSnakeTile(origin, size, sourceOrigin, sourceSize, g_SnakeTexture);
+}
+
+Direction GetRelativeDirection(int xCoord1, int xCoord2, int yCoord1, int yCoord2)
+{
+	int yOffset1{ yCoord1 - yCoord2 };
+	
+
+	int xOffset1{ xCoord1 - xCoord2 };
+
+	switch (yOffset1)
+	{
+	case -1:
+	{
+		//up
+		return Direction::Up;
+		break;
+	}
+	case 1:
+	{
+		//down
+		return Direction::Down;
+
+		break;
+	}
+
+	}
+
+	switch (xOffset1)
+	{
+	case -1:
+	{
+		//right
+		return Direction::Right;
+
+		break;
+	}
+	case 1:
+	{
+		//left
+		return Direction::Left;
+
+		break;
+	}
+
+	}
+
+	return Direction::Up;
+
+}
+
+
+
+void DrawSnakeTile(const Point2f& origin, const Point2f& size)
+{
+	SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	FillRect(origin, size.x, size.y);
+}
+
+void DrawSnakeTile(const Point2f& origin, const Point2f& size, const Point2f& sourceRectOrigin, const Point2f& sourceRectSize, const Texture& texture)
+{
+	Rectf destinationRect{ origin.x, origin.y, size.x, size.y };
+	Rectf sourceRect{ sourceRectOrigin.x, sourceRectOrigin.y, sourceRectSize.x, sourceRectSize.y };
+
+	DrawTexture(texture, destinationRect, sourceRect);
+}
+
+
+void DrawFood()
+{
+
 }
 
 //initializationCode
@@ -242,6 +516,8 @@ void TileStart()
 			Tile* currentTile = &g_TileArray[indexColumn][indexRow];
 			currentTile->coordinate = Point2f(float(indexColumn), float(indexRow));
 
+		
+
 			if (((indexColumn % 25) == 0) && (((indexRow % 25) == 0)))
 			{
 				currentTile->currentType = TileType::Food;
@@ -258,12 +534,17 @@ void TileStart()
 
 void SnakeStart()
 {
+	g_snake.snakeArray = new Tile[g_snake.length];
+
 	for (int i{0}; i < g_snake.length; i++)
 	{
 		Tile* currentTile = &g_TileArray[int(g_snake.snakeHeadCoords.x)][int(g_snake.snakeHeadCoords.y - i)];
 		currentTile->currentType = TileType::Snake;
 		currentTile->lightTimer = (g_snake.length - i);
 
+		g_snake.snakeArray[i] = *currentTile;
+
+		
 	}
 }
 
@@ -414,6 +695,15 @@ void SnakeMove(int newColumn, int newRow)
 		currentTile->currentType = TileType::Snake;
 		currentTile->lightTimer = g_snake.length;
 
+		//shifts all segments back in array
+		for (int i{ g_snake.length -1 }; i > 0; i--)
+		{
+			g_snake.snakeArray[i] = g_snake.snakeArray[i - 1];
+
+		}
+
+		g_snake.snakeArray[0] = *currentTile;
+
 	}
 }
 
@@ -448,6 +738,17 @@ void SnakeIncreaseLength()
 
 	}
 	g_snake.length += 1;
+
+	Tile* newSnakeArray = new Tile[g_snake.length];
+
+	for (int i{ 0 }; i < (g_snake.length - 1); i++)
+	{
+		newSnakeArray[i] = g_snake.snakeArray[i];
+	}
+
+	delete [] g_snake.snakeArray;
+	g_snake.snakeArray = newSnakeArray;
+
 
 }
 	

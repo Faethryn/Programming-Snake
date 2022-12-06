@@ -49,10 +49,12 @@ struct Snake
 	int length{ 4 };
 	Point2f snakeHeadCoords{ (g_Columns / 2) - 1.0f , (g_Rows / 2) - 1.0f };
 	Direction currentDirection{ Direction::Up };
+	Tile* snakeArray = nullptr;
 };
 
 Snake g_snake{};
 
+ Texture g_SnakeTexture{ };
 
 
 // Declare your own functions here
@@ -79,11 +81,23 @@ bool IsCoordOutOfBounds(int column, int row);
 void GameOverTrigger();
 
 Point2f GetCoord(const Point2f& origin);
+Direction GetRelativeDirection(int xCoord1, int xCoord2, int yCoord1, int yCoord2);
 
 int GetArrayIndex(const Point2f& coord);
 Point2f GetOrigin(const Point2f& coord);
 void TileCountDown(Tile& currentTile);
 void DrawTiles();
+void DrawSnake();
+void DrawHead();
+void DrawBody();
+void DrawTail();
+
+
+void DrawSnakeTile(const Point2f& origin, const Point2f& size);
+void DrawSnakeTile(const Point2f& origin, const Point2f& size, const Point2f& sourceRectOrigin, const Point2f& sourceRectSize, const Texture& texture);
+
+
+void DrawFood();
 
 #pragma endregion ownDeclarations
 
